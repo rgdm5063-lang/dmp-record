@@ -455,7 +455,11 @@ updateDisplay();
     const myDeck = document.getElementById("myDeck").value;
     const opponent = document.getElementById("opponent").value;
     const firstSecond = document.getElementById("firstSecond").value;
+  matches.push(match);
+  localStorage.setItem("matches", JSON.stringify(matches));
 
+  alert("戦績を追加しました");
+}
     if (!opponent) {
       alert("相手のデッキを入力してください");
       return;
