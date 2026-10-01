@@ -234,8 +234,15 @@ DMPランキング用の戦績管理アプリ
   <div id="recordList"></div>
 </div>
   
-</main>
+ <!-- バックアップ -->
+<div class="card">
+  <h2>💾 データバックアップ</h2>
 
+  <button onclick="backupData()">
+    📥 バックアップする
+  </button>
+</div> 
+</main>
 
 <script>
 
@@ -472,7 +479,29 @@ function deleteMatch(index) {
     );
 
   }
+function backupData() {
+  const data = JSON.stringify(matches, null, 2);
 
+  const blob = new Blob(
+    [data],
+    { type: "application/json" }
+  );
+
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download =
+    "dmp-backup-" +
+    new Date().toISOString().slice(0, 10) +
+    ".json";
+
+  a.click();
+
+  URL.revokeObjectURL(url);
+
+  alert("バックアップしました！");
+}
 </script>
 
 </body>
