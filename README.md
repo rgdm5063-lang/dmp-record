@@ -1,3 +1,382 @@
 # DMP Record
 
 DMPランキング用の戦績管理アプリ
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DMP戦績管理</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+      background: #f5f5f5;
+      color: #222;
+    }
+
+    header {
+      background: #111;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    main {
+      max-width: 700px;
+      margin: 20px auto;
+      padding: 0 15px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .stat {
+      text-align: center;
+      padding: 15px 5px;
+      background: #f0f0f0;
+      border-radius: 10px;
+    }
+
+    .stat .number {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .stat .label {
+      font-size: 13px;
+      color: #666;
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 19px;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      margin-bottom: 5px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      margin-top: 15px;
+      background: #111;
+      color: white;
+      border: none;
+      font-weight: bold;
+    }
+
+    button:active {
+      opacity: 0.7;
+    }
+
+    .result-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .result-buttons button {
+      margin-top: 0;
+    }
+
+    .win {
+      background: #e8f5e9 !important;
+      color: #1b5e20;
+    }
+
+    .lose {
+      background: #ffebee !important;
+      color: #b71c1c;
+    }
+
+    .selected {
+      outline: 3px solid #333;
+    }
+
+    .matchup {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .matchup:last-child {
+      border-bottom: none;
+    }
+
+    .empty {
+      color: #888;
+      text-align: center;
+      padding: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>🏆 DMP戦績管理</h1>
+</header>
+
+<main>
+
+  <!-- 総合成績 -->
+  <div class="card">
+    <h2>📊 総合成績</h2>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="number" id="total">0</div>
+        <div class="label">試合</div>
+      </div>
+
+      <div class="stat">
+        <div class="number" id="wins">0</div>
+        <div class="label">勝利</div>
+      </div>
+
+      <div class="stat">
+        <div class="number" id="winrate">0%</div>
+        <div class="label">勝率</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 戦績入力 -->
+  <div class="card">
+    <h2>➕ 戦績を入力</h2>
+
+    <label>大会名</label>
+    <input id="tournament" type="text" placeholder="例：○○CS">
+
+    <label>日付</label>
+    <input id="date" type="date">
+
+    <label>自分のデッキ</label>
+    <input id="myDeck" type="text" placeholder="例：ドリームメイト">
+
+    <label>相手のデッキ</label>
+    <input id="opponent" type="text" placeholder="例：アナカラー">
+
+    <label>結果</label>
+
+    <div class="result-buttons">
+      <button id="winButton" class="win" onclick="setResult('win')">
+        ○ 勝ち
+      </button>
+
+      <button id="loseButton" class="lose" onclick="setResult('lose')">
+        × 負け
+      </button>
+    </div>
+
+    <label>先攻・後攻</label>
+
+    <select id="firstSecond">
+      <option value="">選択してください</option>
+      <option value="先攻">先攻</option>
+      <option value="後攻">後攻</option>
+    </select>
+
+    <button onclick="addMatch()">
+      戦績を保存
+    </button>
+  </div>
+
+
+  <!-- 対面別 -->
+  <div class="card">
+    <h2>⚔️ 対面別勝率</h2>
+
+    <div id="matchups">
+      <div class="empty">
+        まだ戦績がありません
+      </div>
+    </div>
+  </div>
+
+</main>
+
+
+<script>
+
+  let matches = [];
+  let selectedResult = "";
+
+  // 結果を選択
+  function setResult(result) {
+    selectedResult = result;
+
+    document.getElementById("winButton").classList.remove("selected");
+    document.getElementById("loseButton").classList.remove("selected");
+
+    if (result === "win") {
+      document.getElementById("winButton").classList.add("selected");
+    } else {
+      document.getElementById("loseButton").classList.add("selected");
+    }
+  }
+
+
+  // 戦績を追加
+  function addMatch() {
+
+    const tournament = document.getElementById("tournament").value;
+    const date = document.getElementById("date").value;
+    const myDeck = document.getElementById("myDeck").value;
+    const opponent = document.getElementById("opponent").value;
+    const firstSecond = document.getElementById("firstSecond").value;
+
+    if (!opponent) {
+      alert("相手のデッキを入力してください");
+      return;
+    }
+
+    if (!selectedResult) {
+      alert("勝ち・負けを選択してください");
+      return;
+    }
+
+    const match = {
+      tournament,
+      date,
+      myDeck,
+      opponent,
+      result: selectedResult,
+      firstSecond
+    };
+
+    matches.push(match);
+
+    updateDisplay();
+
+    // 入力欄をリセット
+    document.getElementById("opponent").value = "";
+    selectedResult = "";
+
+    document.getElementById("winButton").classList.remove("selected");
+    document.getElementById("loseButton").classList.remove("selected");
+
+    alert("戦績を保存しました！");
+  }
+
+
+  // 画面を更新
+  function updateDisplay() {
+
+    const total = matches.length;
+
+    const wins = matches.filter(
+      match => match.result === "win"
+    ).length;
+
+    const winrate =
+      total === 0
+        ? 0
+        : ((wins / total) * 100).toFixed(1);
+
+
+    document.getElementById("total").textContent = total;
+    document.getElementById("wins").textContent = wins;
+    document.getElementById("winrate").textContent = winrate + "%";
+
+
+    // 対面別集計
+    const matchupData = {};
+
+    matches.forEach(match => {
+
+      if (!matchupData[match.opponent]) {
+        matchupData[match.opponent] = {
+          wins: 0,
+          total: 0
+        };
+      }
+
+      matchupData[match.opponent].total++;
+
+      if (match.result === "win") {
+        matchupData[match.opponent].wins++;
+      }
+
+    });
+
+
+    const container = document.getElementById("matchups");
+
+    if (Object.keys(matchupData).length === 0) {
+      container.innerHTML =
+        '<div class="empty">まだ戦績がありません</div>';
+      return;
+    }
+
+
+    container.innerHTML = "";
+
+
+    Object.entries(matchupData).forEach(
+      ([opponent, data]) => {
+
+        const rate =
+          ((data.wins / data.total) * 100).toFixed(1);
+
+        const div = document.createElement("div");
+
+        div.className = "matchup";
+
+        div.innerHTML = `
+          <span>
+            <strong>${opponent}</strong><br>
+            ${data.wins}勝 ${data.total - data.wins}敗
+          </span>
+
+          <strong>
+            ${rate}%
+          </strong>
+        `;
+
+        container.appendChild(div);
+
+      }
+    );
+
+  }
+
+</script>
+
+</body>
+</html>
