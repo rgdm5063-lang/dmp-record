@@ -228,7 +228,12 @@ DMPランキング用の戦績管理アプリ
       </div>
     </div>
   </div>
-
+<!-- 戦績一覧 -->
+<div class="card">
+  <h2>📋 戦績一覧</h2>
+  <div id="recordList"></div>
+</div>
+  
 </main>
 
 
@@ -301,8 +306,95 @@ updateDisplay();
 
 
   // 画面を更新
-  function updateDisplay() {
+  function updateDisplay()renderRecords(); {
+// 戦績一覧を表示
+function renderRecords() {
 
+  const recordList =
+    document.getElementById("recordList");
+
+  if (matches.length === 0) {
+    recordList.innerHTML =
+      '<div class="empty">まだ戦績がありません</div>';
+    return;
+  }
+
+  recordList.innerHTML = "";
+
+  matches.forEach((match, index) => {
+
+    const div = document.createElement("div");
+
+    div.style.borderBottom = "1px solid #eee";
+    div.style.padding = "12px 0";
+
+    let resultText = "";
+
+    if (match.result === "win") {
+      resultText = "🟢 勝ち";
+    } else {
+      resultText = "🔴 負け";
+    }
+
+    div.innerHTML = `
+      <div>
+        <strong>${match.tournament || "大会名なし"}</strong>
+      </div>
+
+      <div>
+        ${match.date || ""}
+      </div>
+
+      <div>
+        ${match.myDeck} vs ${match.opponent}
+      </div>
+
+      <div>
+        ${resultText} ／ ${match.firstSecond}
+      </div>
+
+      <button
+        onclick="deleteMatch(${index})"
+        style="
+          width:auto;
+          margin-top:8px;
+          padding:6px 12px;
+          background:#d93025;
+          color:white;
+          border:none;
+          border-radius:6px;
+        "
+      >
+        🗑️ 削除
+      </button>
+    `;
+
+    recordList.appendChild(div);
+
+  });
+}
+
+
+// 戦績を削除
+function deleteMatch(index) {
+
+  const ok =
+    confirm("この戦績を削除しますか？");
+
+  if (!ok) {
+    return;
+  }
+
+  matches.splice(index, 1);
+
+  localStorage.setItem(
+    "dmpMatches",
+    JSON.stringify(matches)
+  );
+
+  updateDisplay();
+
+}
     const total = matches.length;
 
     const wins = matches.filter(
