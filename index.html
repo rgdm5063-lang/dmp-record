@@ -476,14 +476,14 @@ updateDisplay();
       firstSecond
     };
 
-    matches.push(match);
+      matches.push(match);
 
-localStorage.setItem(
-  "dmpMatches",
-  JSON.stringify(matches)
-);
+  localStorage.setItem(
+    "dmpMatches",
+    JSON.stringify(matches)
+  );
 
-updateDisplay();
+  updateDisplay();
 
     // 入力欄をリセット
     document.getElementById("opponent").value = "";
