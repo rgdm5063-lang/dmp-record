@@ -448,35 +448,34 @@ updateDisplay();
 
 
   // 戦績を追加
-  function addMatch() {
+function addMatch() {
 
-    const tournament = document.getElementById("tournament").value;
-    const date = document.getElementById("date").value;
-    const myDeck = document.getElementById("myDeck").value;
-    const opponent = document.getElementById("opponent").value;
-    const firstSecond = document.getElementById("firstSecond").value;
-  
-}
-    if (!opponent) {
-      alert("相手のデッキを入力してください");
-      return;
-    }
+  const tournament = document.getElementById("tournament").value;
+  const date = document.getElementById("date").value;
+  const myDeck = document.getElementById("myDeck").value;
+  const opponent = document.getElementById("opponent").value;
+  const firstSecond = document.getElementById("firstSecond").value;
 
-    if (!selectedResult) {
-      alert("勝ち・負けを選択してください");
-      return;
-    }
+  if (!opponent) {
+    alert("相手のデッキを入力してください");
+    return;
+  }
 
-    const match = {
-      tournament,
-      date,
-      myDeck,
-      opponent,
-      result: selectedResult,
-      firstSecond
-    };
+  if (!selectedResult) {
+    alert("勝ち・負けを選択してください");
+    return;
+  }
 
-      matches.push(match);
+  const match = {
+    tournament,
+    date,
+    myDeck,
+    opponent,
+    result: selectedResult,
+    firstSecond
+  };
+
+  matches.push(match);
 
   localStorage.setItem(
     "dmpMatches",
@@ -485,17 +484,15 @@ updateDisplay();
 
   updateDisplay();
 
-    // 入力欄をリセット
-    document.getElementById("opponent").value = "";
-    selectedResult = "";
+  // 入力欄をリセット
+  document.getElementById("opponent").value = "";
+  selectedResult = "";
 
-    document.getElementById("winButton").classList.remove("selected");
-    document.getElementById("loseButton").classList.remove("selected");
+  document.getElementById("winButton").classList.remove("selected");
+  document.getElementById("loseButton").classList.remove("selected");
 
-    alert("戦績を保存しました！");
-  }
-
-
+  alert("戦績を保存しました！");
+}
 // 画面を更新
 // 戦績一覧を表示
 function renderRecords() {
