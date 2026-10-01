@@ -202,8 +202,9 @@ DMPランキング用の戦績管理アプリ
 </select>
 
     <label>相手のデッキ</label>
-    <input id="opponent" type="text" placeholder="例：アナカラー">
-
+<select id="opponent">
+  <option value="">相手のデッキを選択してください</option>
+</select>
     <label>結果</label>
 
     <div class="result-buttons">
@@ -407,6 +408,13 @@ const myDeckSelect = document.getElementById("myDeck");
 
 myDeckSelect.innerHTML =
   '<option value="">自分のデッキを選択してください</option>' +
+  decks.map(function(name) {
+    return `<option value="${name}">${name}</option>`;
+  }).join("");
+  const opponentSelect = document.getElementById("opponent");
+
+opponentSelect.innerHTML =
+  '<option value="">相手のデッキを選択してください</option>' +
   decks.map(function(name) {
     return `<option value="${name}">${name}</option>`;
   }).join("");
