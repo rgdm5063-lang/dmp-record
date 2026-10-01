@@ -155,6 +155,7 @@ DMPランキング用の戦績管理アプリ
   <button onclick="showPage('input')"> 戦績入力</button>
   <button onclick="showPage('records')"> 戦績一覧</button>
   <button onclick="showPage('matchup')"> 対面勝率</button>
+  <button onclick="showPage('master')">マスタ管理</button>
 </nav>
 <main>
 
@@ -265,6 +266,24 @@ DMPランキング用の戦績管理アプリ
   </button>
 </div>
 </div>
+  <!-- マスタ管理 -->
+<div id="master" class="card">
+  <h2>⚙️ マスタ管理</h2>
+
+  <h3>🏆 大会マスタ</h3>
+  <div>
+  <input id="tournamentName" type="text" placeholder="大会名を入力">
+  <button onclick="addTournament()">大会を追加</button>
+</div>
+  <div id="tournamentMasterList"></div>
+
+  <h3>🃏 デッキマスタ</h3>
+  <div>
+  <input id="deckName" type="text" placeholder="デッキ名を入力">
+  <button onclick="addDeck()">デッキを追加</button>
+</div>
+  <div id="deckMasterList"></div>
+</div>
 </main>
 
 <script>
@@ -273,11 +292,125 @@ function showPage(page) {
   document.getElementById("input").style.display = "none";
   document.getElementById("records").style.display = "none";
   document.getElementById("matchup").style.display = "none";
-
+  document.getElementById("master").style.display = "none";
   document.getElementById(page).style.display = "block";
 }
   let matches = JSON.parse(localStorage.getItem("dmpMatches")) || [];
   let selectedResult = "";
+  let tournaments = JSON.parse(localStorage.getItem("dmpTournaments")) || [];
+let decks = JSON.parse(localStorage.getItem("dmpDecks")) || [];
+
+function addDeck() {
+  const input = document.getElementById("deckName");
+  const name = input.value.trim();
+
+  if (!name) {
+    alert("デッキ名を入力してください");
+    return;
+  }
+
+  if (decks.includes(name)) {
+    alert("そのデッキはすでに登録されています");
+    return;
+  }
+
+  decks.push(name);
+
+  localStorage.setItem(
+    "dmpDecks",
+    JSON.stringify(decks)
+  );
+
+  input.value = "";
+  renderDeckMaster();
+}
+
+function renderDeckMaster() {
+  const list = document.getElementById("deckMasterList");
+
+  list.innerHTML = decks.map(function(name, index) {
+    return `
+      <div style="margin: 8px 0;">
+        ${name}
+        <button onclick="deleteDeck(${index})">削除</button>
+      </div>
+    `;
+  }).join("");
+}
+
+function deleteDeck(index) {
+  const ok = confirm(
+    "「" + decks[index] + "」を削除しますか？"
+  );
+
+  if (!ok) return;
+
+  decks.splice(index, 1);
+
+  localStorage.setItem(
+    "dmpDecks",
+    JSON.stringify(decks)
+  );
+
+  renderDeckMaster();
+}
+
+renderDeckMaster();
+function addTournament() {
+  const input = document.getElementById("tournamentName");
+  const name = input.value.trim();
+
+  if (!name) {
+    alert("大会名を入力してください");
+    return;
+  }
+
+  if (tournaments.includes(name)) {
+    alert("その大会はすでに登録されています");
+    return;
+  }
+
+  tournaments.push(name);
+  localStorage.setItem(
+    "dmpTournaments",
+    JSON.stringify(tournaments)
+  );
+
+  input.value = "";
+  renderTournamentMaster();
+}
+
+function renderTournamentMaster() {
+  const list = document.getElementById("tournamentMasterList");
+
+  list.innerHTML = tournaments.map(function(name, index) {
+    return `
+      <div style="margin: 8px 0;">
+        ${name}
+        <button onclick="deleteTournament(${index})">削除</button>
+      </div>
+    `;
+  }).join("");
+}
+
+function deleteTournament(index) {
+  const ok = confirm(
+    "「" + tournaments[index] + "」を削除しますか？"
+  );
+
+  if (!ok) return;
+
+  tournaments.splice(index, 1);
+
+  localStorage.setItem(
+    "dmpTournaments",
+    JSON.stringify(tournaments)
+  );
+
+  renderTournamentMaster();
+}
+
+renderTournamentMaster();
 updateDisplay();
   // 結果を選択
   function setResult(result) {
