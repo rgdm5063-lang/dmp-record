@@ -236,7 +236,7 @@ DMPランキング用の戦績管理アプリ
 
   let matches = JSON.parse(localStorage.getItem("dmpMatches")) || [];
   let selectedResult = "";
-
+updateDisplay();
   // 結果を選択
   function setResult(result) {
     selectedResult = result;
