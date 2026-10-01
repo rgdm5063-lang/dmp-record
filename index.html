@@ -265,7 +265,14 @@ DMPランキング用の戦績管理アプリ
 </main>
 
 <script>
+function showPage(page) {
+  document.getElementById("home").style.display = "none";
+  document.getElementById("input").style.display = "none";
+  document.getElementById("records").style.display = "none";
+  document.getElementById("matchup").style.display = "none";
 
+  document.getElementById(page).style.display = "block";
+}
   let matches = JSON.parse(localStorage.getItem("dmpMatches")) || [];
   let selectedResult = "";
 updateDisplay();
