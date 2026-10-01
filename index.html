@@ -234,7 +234,7 @@ DMPランキング用の戦績管理アプリ
 
 <script>
 
-  let matches = [];
+  let matches = JSON.parse(localStorage.getItem("dmpMatches")) || [];
   let selectedResult = "";
 
   // 結果を選択
@@ -282,7 +282,12 @@ DMPランキング用の戦績管理アプリ
 
     matches.push(match);
 
-    updateDisplay();
+localStorage.setItem(
+  "dmpMatches",
+  JSON.stringify(matches)
+);
+
+updateDisplay();
 
     // 入力欄をリセット
     document.getElementById("opponent").value = "";
