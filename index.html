@@ -242,6 +242,20 @@ DMPランキング用の戦績管理アプリ
     📥 バックアップする
   </button>
 </div> 
+  <!-- データ復元 -->
+<div class="card">
+  <h2>📤 データ復元</h2>
+
+  <input
+    type="file"
+    id="restoreFile"
+    accept=".json"
+  >
+
+  <button onclick="restoreData()">
+    📤 バックアップから復元
+  </button>
+</div>
 </main>
 
 <script>
@@ -501,6 +515,58 @@ function backupData() {
   URL.revokeObjectURL(url);
 
   alert("バックアップしました！");
+}
+function restoreData() {
+  const fileInput = document.getElementById("restoreFile");
+  const file = fileInput.files[0];
+
+  if (!file) {
+    alert("バックアップファイルを選択してください！");
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = function(event) {
+    try {
+      const restoredData = JSON.parse(event.target.result);
+
+      if (!Array.isArray(restoredData)) {
+        alert("正しいバックアップファイルではありません。");
+        return;
+      }
+
+      const ok = confirm(
+        restoredData.length +
+        "件の戦績を復元します。\n現在の戦績は上書きされます。\nよろしいですか？"
+      );
+
+      if (!ok) {
+        return;
+      }
+
+      matches = restoredData;
+
+      localStorage.setItem(
+        "dmpMatches",
+        JSON.stringify(matches)
+      );
+
+      updateDisplay();
+
+      alert(
+        restoredData.length +
+        "件の戦績を復元しました！"
+      );
+
+    } catch (error) {
+      alert(
+        "バックアップファイルを読み込めませんでした。"
+      );
+    }
+  };
+
+  reader.readAsText(file);
 }
 </script>
 
