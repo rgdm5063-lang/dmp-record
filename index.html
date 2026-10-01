@@ -299,10 +299,10 @@ function showPage(page) {
   document.getElementById("master").style.display = "none";
   document.getElementById(page).style.display = "block";
 }
-  let matches = JSON.parse(localStorage.getItem("dmpMatches")) || [];
+  let matches = JSON.parse(localStorage.getItem("dmpMatches") || "[]");
   let selectedResult = "";
-  let tournaments = JSON.parse(localStorage.getItem("dmpTournaments")) || [];
-let decks = JSON.parse(localStorage.getItem("dmpDecks")) || [];
+  let tournaments = JSON.parse(localStorage.getItem("dmpTournaments") || "[]");
+let decks = JSON.parse(localStorage.getItem("dmpDecks") || "[]");
 
 function addDeck() {
   const input = document.getElementById("deckName");
