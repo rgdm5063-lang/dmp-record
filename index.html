@@ -393,29 +393,9 @@ function renderRecords() {
     recordList.appendChild(div);
 
   });
-}
+}function updateDisplay() {
 
 
-// 戦績を削除
-function deleteMatch(index) {
-
-  const ok =
-    confirm("この戦績を削除しますか？");
-
-  if (!ok) {
-    return;
-  }
-
-  matches.splice(index, 1);
-
-  localStorage.setItem(
-    "dmpMatches",
-    JSON.stringify(matches)
-  );
-
-  updateDisplay();
-
-}
     const total = matches.length;
 
     const wins = matches.filter(
@@ -492,7 +472,24 @@ function deleteMatch(index) {
       }
     );
 
-  }
+  }function deleteMatch(index) {
+
+    const ok =
+        confirm("この戦績を削除しますか？");
+
+    if (!ok) {
+        return;
+    }
+
+    matches.splice(index, 1);
+
+    localStorage.setItem(
+        "dmpMatches",
+        JSON.stringify(matches)
+    );
+
+    updateDisplay();
+}
 function backupData() {
   const data = JSON.stringify(matches, null, 2);
 
