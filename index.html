@@ -429,8 +429,7 @@ myDeckSelect.innerHTML =
   decks.map(function(name) {
     return `<option value="${name}">${name}</option>`;
   }).join("");
-  renderSearchTournament();
-      }
+  
   const opponentSelect = document.getElementById("opponent");
 
 opponentSelect.innerHTML =
@@ -438,6 +437,7 @@ opponentSelect.innerHTML =
   decks.map(function(name) {
     return `<option value="${name}">${name}</option>`;
   }).join("");
+  renderSearchTournament();
 }
 
 function deleteTournament(index) {
