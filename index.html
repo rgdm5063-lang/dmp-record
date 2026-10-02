@@ -300,7 +300,7 @@
   <!-- 勝率グラフ -->
   <div id="chartView" style="display:none;" class="card">
     <h2>📈 時系列勝率推移グラフ</h2>
-    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">日付順に並べた大会ごとの「累積勝率」の推移を表示します。</p>
+    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">日付順に並べた戦績の「累積勝率」の推移を表示します。</p>
     <div id="chartContainer">
       <canvas id="winrateChart"></canvas>
     </div>
@@ -377,7 +377,7 @@
 
     // グラフタブが開かれたら描画を更新
     if (page === 'chartView') {
-      drawWinrateChart();
+      setTimeout(drawWinrateChart, 50); // 描画タイミングのズレを防ぐための遅延
     }
   }
 
@@ -480,16 +480,22 @@
   // セレクトボックスの更新
   function updateSelects() {
     const tournamentSelect = document.getElementById("tournament");
-    tournamentSelect.innerHTML = '<option value="">大会を選択してください</option>' +
-      tournaments.map(name => `<option value="${name}">${name}</option>`).join("");
+    if (tournamentSelect) {
+      tournamentSelect.innerHTML = '<option value="">大会を選択してください</option>' +
+        tournaments.map(name => `<option value="${name}">${name}</option>`).join("");
+    }
 
     const myDeckSelect = document.getElementById("myDeck");
-    myDeckSelect.innerHTML = '<option value="">自分のデッキを選択してください</option>' +
-      decks.map(name => `<option value="${name}">${name}</option>`).join("");
+    if (myDeckSelect) {
+      myDeckSelect.innerHTML = '<option value="">自分のデッキを選択してください</option>' +
+        decks.map(name => `<option value="${name}">${name}</option>`).join("");
+    }
 
     const searchTournament = document.getElementById("searchTournament");
-    searchTournament.innerHTML = '<option value="">すべての大会</option>' +
-      tournaments.map(name => `<option value="${name}">${name}</option>`).join("");
+    if (searchTournament) {
+      searchTournament.innerHTML = '<option value="">すべての大会</option>' +
+        tournaments.map(name => `<option value="${name}">${name}</option>`).join("");
+    }
   }
 
   // 回戦入力欄の動的生成
@@ -625,10 +631,10 @@
   // グラフ描画機能
   function drawWinrateChart() {
     const canvas = document.getElementById("winrateChart");
+    if (!canvas) return;
     const ctx = canvas.getContext("2d");
     
-    // 高解像度ディスプレイ対応
-    const width = canvas.parentElement.clientWidth;
+    const width = canvas.parentElement.clientWidth || 600;
     const height = 300;
     canvas.width = width * window.devicePixelRatio;
     canvas.height = height * window.devicePixelRatio;
@@ -641,7 +647,8 @@
       ctx.font = "14px sans-serif";
       ctx.textAlign = "center";
       ctx.fillText("データがありません", width / 2, height / 2);
-      document.getElementById("chartLegend.innerHTML = "";
+      const legend = document.getElementById("chartLegend");
+      if (legend) legend.innerHTML = "";
       return;
     }
 
@@ -652,7 +659,6 @@
       return dateA.localeCompare(dateB);
     });
 
-    // 試合ごとの累積勝率データを計算
     let totalWins = 0;
     const points = sortedMatches.map((match, index) => {
       if (match.result === "win") totalWins++;
@@ -669,7 +675,7 @@
     const graphWidth = width - padding * 2;
     const graphHeight = height - padding * 2;
 
-    // グリッド線の描画 (0%, 25%, 50%, 75%, 100%)
+    // グリッド線の描画
     ctx.strokeStyle = "#e0e0e0";
     ctx.lineWidth = 1;
     ctx.font = "11px sans-serif";
@@ -689,18 +695,18 @@
     }
 
     if (points.length === 1) {
-      // 1件だけの場合は点だけ表示
       const x = padding + graphWidth / 2;
       const y = padding + graphHeight - (graphHeight * (points[0].rate / 100));
       ctx.fillStyle = "#2563eb";
       ctx.beginPath();
       ctx.arc(x, y, 5, 0, Math.PI * 2);
       ctx.fill();
-      document.getElementById("chartLegend").innerHTML = `全 ${points.length} 試合の累積勝率推移`;
+      const legend = document.getElementById("chartLegend");
+      if (legend) legend.innerHTML = `全 ${points.length} 試合の累積勝率推移`;
       return;
     }
 
-    // 折れ線グラフのパスを描画
+    // 折れ線グラフ描画
     ctx.strokeStyle = "#2563eb";
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -717,7 +723,7 @@
     });
     ctx.stroke();
 
-    // データポイント（丸印）を描画
+    // データポイント描画
     points.forEach((pt, i) => {
       const x = padding + (graphWidth / (points.length - 1)) * i;
       const y = padding + graphHeight - (graphHeight * (pt.rate / 100));
@@ -731,12 +737,16 @@
       ctx.stroke();
     });
 
-    document.getElementById("chartLegend").innerHTML = `総試合数: <strong>${points.length}試合</strong> ／ 最終累積勝率: <strong>${points[points.length - 1].rate.toFixed(1)}%</strong>（時系列順）`;
+    const legend = document.getElementById("chartLegend");
+    if (legend) {
+      legend.innerHTML = `総試合数: <strong>${points.length}試合</strong> ／ 最終累積勝率: <strong>${points[points.length - 1].rate.toFixed(1)}%</strong>（時系列順）`;
+    }
   }
 
   // 戦績一覧を表示
   function renderRecords(data = matches) {
     const recordList = document.getElementById("recordList");
+    if (!recordList) return;
 
     if (data.length === 0) {
       recordList.innerHTML = '<div class="empty">まだ戦績がありません</div>';
@@ -770,9 +780,13 @@
     const wins = matches.filter(match => match.result === "win").length;
     const winrate = total === 0 ? 0 : ((wins / total) * 100).toFixed(1);
 
-    document.getElementById("total").textContent = total;
-    document.getElementById("wins").textContent = wins;
-    document.getElementById("winrate").textContent = winrate + "%";
+    const totalEl = document.getElementById("total");
+    const winsEl = document.getElementById("wins");
+    const winrateEl = document.getElementById("winrate");
+
+    if (totalEl) totalEl.textContent = total;
+    if (winsEl) winsEl.textContent = wins;
+    if (winrateEl) winrateEl.textContent = winrate + "%";
 
     // 対面別集計
     const matchupData = {};
@@ -787,20 +801,22 @@
     });
 
     const container = document.getElementById("matchups");
-    if (Object.keys(matchupData).length === 0) {
-      container.innerHTML = '<div class="empty">まだ戦績がありません</div>';
-    } else {
-      container.innerHTML = "";
-      Object.entries(matchupData).forEach(([opponent, data]) => {
-        const rate = ((data.wins / data.total) * 100).toFixed(1);
-        const div = document.createElement("div");
-        div.className = "matchup";
-        div.innerHTML = `
-          <span><strong>${opponent}</strong><br>${data.wins}勝 ${data.total - data.wins}敗</span>
-          <strong>${rate}%</strong>
-        `;
-        container.appendChild(div);
-      });
+    if (container) {
+      if (Object.keys(matchupData).length === 0) {
+        container.innerHTML = '<div class="empty">まだ戦績がありません</div>';
+      } else {
+        container.innerHTML = "";
+        Object.entries(matchupData).forEach(([opponent, data]) => {
+          const rate = ((data.wins / data.total) * 100).toFixed(1);
+          const div = document.createElement("div");
+          div.className = "matchup";
+          div.innerHTML = `
+            <span><strong>${opponent}</strong><br>${data.wins}勝 ${data.total - data.wins}敗</span>
+            <strong>${rate}%</strong>
+          `;
+          container.appendChild(div);
+        });
+      }
     }
 
     renderRecords();
