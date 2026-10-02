@@ -597,91 +597,100 @@ if (data.length === 0) {
     recordList.appendChild(div);
 
   });
-}function updateDisplay() {
+  function updateDisplay() {
+
+  const total = matches.length;
+
+  const wins = matches.filter(
+    match => match.result === "win"
+  ).length;
+
+  const winrate =
+    total === 0
+      ? 0
+      : ((wins / total) * 100).toFixed(1);
+
+  document.getElementById("total").textContent = total;
+  document.getElementById("wins").textContent = wins;
+  document.getElementById("winrate").textContent = winrate + "%";
 
 
-    const total = matches.length;
+  // 対面別集計
+  const matchupData = {};
 
-    const wins = matches.filter(
-      match => match.result === "win"
-    ).length;
+  matches.forEach(match => {
 
-    const winrate =
-      total === 0
-        ? 0
-        : ((wins / total) * 100).toFixed(1);
-
-
-    document.getElementById("total").textContent = total;
-    document.getElementById("wins").textContent = wins;
-    document.getElementById("winrate").textContent = winrate + "%";
-
-
-    // 対面別集計
-    const matchupData = {};
-
-    matches.forEach(match => {
-
-      if (!matchupData[match.opponent]) {
-        matchupData[match.opponent] = {
-          wins: 0,
-          total: 0
-        };
-      }
-
-      matchupData[match.opponent].total++;
-
-      if (match.result === "win") {
-        matchupData[match.opponent].wins++;
-      }
-
-    });
-
-
-    const container = document.getElementById("matchups");
-
-    if (Object.keys(matchupData).length === 0) {
-      container.innerHTML =
-        '<div class="empty">まだ戦績がありません</div>';
-      return;
+    if (!matchupData[match.opponent]) {
+      matchupData[match.opponent] = {
+        wins: 0,
+        total: 0
+      };
     }
 
+    matchupData[match.opponent].total++;
 
-    container.innerHTML = "";
+    if (match.result === "win") {
+      matchupData[match.opponent].wins++;
+    }
+
+  });
 
 
-    Object.entries(matchupData).forEach(
-      ([opponent, data]) => {
+  const container = document.getElementById("matchups");
 
-        const rate =
-          ((data.wins / data.total) * 100).toFixed(1);
+  if (Object.keys(matchupData).length === 0) {
+    container.innerHTML =
+      '<div class="empty">まだ戦績がありません</div>';
 
-        const div = document.createElement("div");
+    renderRecords();
+    return;
+  }
 
-        div.className = "matchup";
 
-        div.innerHTML = `
-          <span>
-            <strong>${opponent}</strong><br>
-            ${data.wins}勝 ${data.total - data.wins}敗
-          </span>
+  container.innerHTML = "";
 
-          <strong>
-            ${rate}%
-          </strong>
-        `;
 
-        container.appendChild(div);
+  Object.entries(matchupData).forEach(
+    ([opponent, data]) => {
 
-      }
-    );
+      const rate =
+        ((data.wins / data.total) * 100).toFixed(1);
 
-  function searchRecords() {
+      const div = document.createElement("div");
+
+      div.className = "matchup";
+
+      div.innerHTML = `
+        <span>
+          <strong>${opponent}</strong><br>
+          ${data.wins}勝 ${data.total - data.wins}敗
+        </span>
+
+        <strong>
+          ${rate}%
+        </strong>
+      `;
+
+      container.appendChild(div);
+
+    }
+  );
+
+
+  // 戦績一覧を表示
+  renderRecords();
+}
+
+
+// 検索
+function searchRecords() {
+
   const searchDate =
     document.getElementById("searchDate").value;
 
   const searchTournament =
     document.getElementById("searchTournament").value;
+
 
   const filteredMatches = matches.filter(function(match) {
 
@@ -693,11 +702,15 @@ if (data.length === 0) {
       match.tournament === searchTournament;
 
     return dateOK && tournamentOK;
+
   });
+
 
   renderRecords(filteredMatches);
 }
 
+
+// 検索をクリア
 function clearSearch() {
 
   document.getElementById("searchDate").value = "";
@@ -707,8 +720,8 @@ function clearSearch() {
   renderRecords(matches);
 }
 
+
 renderRecords();
-  }
   function deleteMatch(index) {
 
     const ok =
