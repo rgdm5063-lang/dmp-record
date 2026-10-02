@@ -98,7 +98,10 @@
 
     h3 {
       font-size: 16px;
+      margin-top: 20px;
       margin-bottom: 8px;
+      border-left: 4px solid #111;
+      padding-left: 8px;
     }
 
     label {
@@ -130,28 +133,56 @@
       opacity: 0.7;
     }
 
-    .result-buttons {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+    .match-row {
+      background: #fafafa;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
     }
 
-    .result-buttons button {
+    .match-row-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 500px) {
+      .match-row-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .win-lose-group {
+      display: flex;
+      gap: 5px;
+    }
+
+    .win-lose-group button {
       margin-top: 0;
+      padding: 8px;
+      font-size: 14px;
     }
 
     .win {
       background: #e8f5e9 !important;
       color: #1b5e20;
+      border: 1px solid #c8e6c9;
     }
 
     .lose {
       background: #ffebee !important;
       color: #b71c1c;
+      border: 1px solid #ffcdd2;
     }
 
-    .selected {
-      outline: 3px solid #333;
+    .selected-win {
+      outline: 3px solid #2e7d32;
+    }
+
+    .selected-lose {
+      outline: 3px solid #c62828;
     }
 
     .matchup {
@@ -209,10 +240,10 @@
     </div>
   </div>
 
-  <!-- 戦績入力 -->
+  <!-- 戦績入力（一括入力対応） -->
   <div id="input" style="display:none;">
     <div class="card">
-      <h2>➕ 戦績を入力</h2>
+      <h2>➕ 大会戦績を一括入力</h2>
 
       <label>大会名</label>
       <select id="tournament">
@@ -227,25 +258,25 @@
         <option value="">自分のデッキを選択してください</option>
       </select>
 
-      <label>相手のデッキ</label>
-      <select id="opponent">
-        <option value="">相手のデッキを選択してください</option>
-      </select>
-
-      <label>結果</label>
-      <div class="result-buttons">
-        <button id="winButton" class="win" onclick="setResult('win')">○ 勝ち</button>
-        <button id="loseButton" class="lose" onclick="setResult('lose')">× 負け</button>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div>
+          <label>予選の回戦数</label>
+          <input id="qualRoundCount" type="number" min="0" max="10" value="5">
+        </div>
+        <div>
+          <label>本戦の回戦数</label>
+          <input id="finalRoundCount" type="number" min="0" max="6" value="3">
+        </div>
       </div>
 
-      <label>先攻・後攻</label>
-      <select id="firstSecond">
-        <option value="">選択してください</option>
-        <option value="先攻">先攻</option>
-        <option value="後攻">後攻</option>
-      </select>
+      <button onclick="generateMatchInputs()" style="background: #2563eb; margin-top: 15px;">回戦入力欄を作成する</button>
+    </div>
 
-      <button onclick="addMatch()">戦績を保存</button>
+    <!-- 動的に生成される回戦入力エリア -->
+    <div id="dynamicInputArea" class="card" style="display:none;">
+      <h2>📝 各回戦の結果入力</h2>
+      <div id="matchRowsContainer"></div>
+      <button onclick="saveAllMatches()" style="background: #16a34a; margin-top: 20px; font-size: 18px;">💾 すべての戦績を保存する</button>
     </div>
   </div>
 
@@ -301,7 +332,7 @@
     </div>
     <div id="tournamentMasterList"></div>
 
-    <h3 style="margin-top:25px;">🃏 デッキマスタ</h3>
+    <h3>🃏 デッキマスタ</h3>
     <div>
       <input id="deckName" type="text" placeholder="デッキ名を入力">
       <button onclick="addDeck()">デッキを追加</button>
@@ -314,7 +345,6 @@
   let matches = JSON.parse(localStorage.getItem("dmpMatches") || "[]");
   let tournaments = JSON.parse(localStorage.getItem("dmpTournaments") || "[]");
   let decks = JSON.parse(localStorage.getItem("dmpDecks") || "[]");
-  let selectedResult = "";
 
   function showPage(page) {
     document.getElementById("home").style.display = "none";
@@ -430,68 +460,147 @@
     const myDeckSelect = document.getElementById("myDeck");
     myDeckSelect.innerHTML = '<option value="">自分のデッキを選択してください</option>' +
       decks.map(name => `<option value="${name}">${name}</option>`).join("");
-      
-    const opponentSelect = document.getElementById("opponent");
-    opponentSelect.innerHTML = '<option value="">相手のデッキを選択してください</option>' +
-      decks.map(name => `<option value="${name}">${name}</option>`).join("");
 
     const searchTournament = document.getElementById("searchTournament");
     searchTournament.innerHTML = '<option value="">すべての大会</option>' +
       tournaments.map(name => `<option value="${name}">${name}</option>`).join("");
   }
 
-  // 結果を選択
-  function setResult(result) {
-    selectedResult = result;
-    document.getElementById("winButton").classList.remove("selected");
-    document.getElementById("loseButton").classList.remove("selected");
+  // 回戦入力欄の動的生成
+  function generateMatchInputs() {
+    const qualCount = parseInt(document.getElementById("qualRoundCount").value) || 0;
+    const finalCount = parseInt(document.getElementById("finalRoundCount").value) || 0;
+    const container = document.getElementById("matchRowsContainer");
+    const dynamicArea = document.getElementById("dynamicInputArea");
 
-    if (result === "win") {
-      document.getElementById("winButton").classList.add("selected");
+    if (qualCount === 0 && finalCount === 0) {
+      alert("予選または本戦の回戦数を1以上に設定してください。");
+      return;
+    }
+
+    let html = "";
+
+    // 予選入力行
+    if (qualCount > 0) {
+      html += `<h3>予選ラウンド (${qualCount}回戦)</h3>`;
+      for (let i = 1; i <= qualCount; i++) {
+        html += createMatchRowHTML("予選", i);
+      }
+    }
+
+    // 本戦入力行
+    if (finalCount > 0) {
+      html += `<h3>本戦トーナメント (${finalCount}回戦)</h3>`;
+      for (let i = 1; i <= finalCount; i++) {
+        html += createMatchRowHTML("本戦", i);
+      }
+    }
+
+    container.innerHTML = html;
+    dynamicArea.style.display = "block";
+    dynamicArea.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function createMatchRowHTML(phase, roundNum) {
+    let deckOptions = '<option value="">相手のデッキ選択</option>' +
+      decks.map(name => `<option value="${name}">${name}</option>`).join("");
+
+    return `
+      <div class="match-row" data-phase="${phase}" data-round="${roundNum}">
+        <div style="font-weight:bold; margin-bottom:4px; font-size:14px; color:#444;">${phase} ${roundNum}回戦</div>
+        <div class="match-row-grid">
+          <div>
+            <select class="row-opponent">
+              ${deckOptions}
+            </select>
+          </div>
+          <div>
+            <select class="row-firstsecond">
+              <option value="先攻">先攻</option>
+              <option value="后攻">後攻</option>
+              <option value="先後未選択">先後未選択</option>
+            </select>
+          </div>
+          <div class="win-lose-group">
+            <button type="button" class="win" onclick="setRowResult(this, 'win')">○ 勝ち</button>
+            <button type="button" class="lose" onclick="setRowResult(this, 'lose')">× 負け</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // 行ごとの勝敗選択トグル
+  function setRowResult(btn, result) {
+    const parentGroup = btn.parentElement;
+    const winBtn = parentGroup.querySelector('.win');
+    const loseBtn = parentGroup.querySelector('.lose');
+
+    winBtn.classList.remove('selected-win');
+    loseBtn.classList.remove('selected-lose');
+
+    parentGroup.dataset.result = result;
+
+    if (result === 'win') {
+      winBtn.classList.add('selected-win');
     } else {
-      document.getElementById("loseButton").classList.add("selected");
+      loseBtn.classList.add('selected-lose');
     }
   }
 
-  // 戦績を追加
-  function addMatch() {
+  // すべての戦績を保存
+  function saveAllMatches() {
     const tournament = document.getElementById("tournament").value;
     const date = document.getElementById("date").value;
     const myDeck = document.getElementById("myDeck").value;
-    const opponent = document.getElementById("opponent").value;
-    const firstSecond = document.getElementById("firstSecond").value;
 
-    if (!opponent) {
-      alert("相手のデッキを選択してください");
+    const rowElements = document.querySelectorAll(".match-row");
+    const newMatches = [];
+
+    for (let row of rowElements) {
+      const phase = row.dataset.phase;
+      const round = row.dataset.round;
+      const opponent = row.querySelector(".row-opponent").value;
+      const firstSecond = row.querySelector(".row-firstsecond").value;
+      const result = row.querySelector(".win-lose-group").dataset.result;
+
+      // 対戦相手または勝敗のどちらかが入力されている、あるいは両方入力されている行を有効とする
+      if (opponent || result) {
+        if (!opponent) {
+          alert(`${phase} ${round}回戦の相手デッキが未選択です。`);
+          return;
+        }
+        if (!result) {
+          alert(`${phase} ${round}回戦の勝ち・負けが選択されていません。`);
+          return;
+        }
+
+        newMatches.push({
+          tournament: tournament || "大会名なし",
+          date: date || "",
+          myDeck: myDeck || "未選択",
+          opponent,
+          result,
+          firstSecond: `${phase}${round}回戦・${firstSecond}`
+        });
+      }
+    }
+
+    if (newMatches.length === 0) {
+      alert("保存する戦績データが入力されていません。");
       return;
     }
 
-    if (!selectedResult) {
-      alert("勝ち・負けを選択してください");
-      return;
-    }
-
-    const match = {
-      tournament,
-      date,
-      myDeck,
-      opponent,
-      result: selectedResult,
-      firstSecond
-    };
-
-    matches.push(match);
+    // 追加して保存
+    matches.push(...newMatches);
     localStorage.setItem("dmpMatches", JSON.stringify(matches));
 
     updateDisplay();
 
-    // 入力欄をリセット
-    document.getElementById("opponent").value = "";
-    selectedResult = "";
-    document.getElementById("winButton").classList.remove("selected");
-    document.getElementById("loseButton").classList.remove("selected");
-
-    alert("戦績を保存しました！");
+    // フォームリセット
+    document.getElementById("dynamicInputArea").style.display = "none";
+    alert(newMatches.length + "件の戦績を保存しました！");
+    showPage("records");
   }
 
   // 戦績一覧を表示
@@ -505,8 +614,7 @@
 
     recordList.innerHTML = "";
 
-    data.forEach((match, index) => {
-      // 元の配列におけるインデックスを探す（検索時対応）
+    data.forEach((match) => {
       const originalIndex = matches.indexOf(match);
       const div = document.createElement("div");
       div.style.borderBottom = "1px solid #eee";
@@ -515,10 +623,10 @@
       let resultText = match.result === "win" ? "🟢 勝ち" : "🔴 負け";
 
       div.innerHTML = `
-        <div><strong>${match.tournament || "大会名なし"}</strong></div>
+        <div><strong>${match.tournament}</strong></div>
         <div>${match.date || "日付なし"}</div>
-        <div>${match.myDeck || "未選択"} vs ${match.opponent}</div>
-        <div>${resultText} ／ ${match.firstSecond || "先後未選択"}</div>
+        <div>${match.myDeck} vs ${match.opponent}</div>
+        <div>${resultText} ／ ${match.firstSecond || ""}</div>
         <button onclick="deleteMatch(${originalIndex})" style="width:auto; margin-top:8px; padding:6px 12px; background:#d93025; color:white; border:none; border-radius:6px; font-size:14px;">🗑️ 削除</button>
       `;
       recordList.appendChild(div);
@@ -598,7 +706,7 @@
     updateDisplay();
   }
 
-  // バックアップ (マスタデータも含めるように改善)
+  // バックアップ
   function backupData() {
     const backupObj = {
       matches: matches,
@@ -631,8 +739,6 @@
     reader.onload = function(event) {
       try {
         const restored = JSON.parse(event.target.result);
-
-        // 旧形式（配列のみ）と新形式（オブジェクト）の両方に対応
         let restoredMatches = [];
         let restoredTournaments = tournaments;
         let restoredDecks = decks;
