@@ -183,7 +183,6 @@
       opacity: 0.8;
     }
 
-    /* カッコいい削除ボタン */
     .btn-danger {
       background: transparent;
       color: var(--danger);
@@ -191,7 +190,7 @@
       padding: 6px 12px;
       font-size: 12px;
       width: auto;
-      margin-top: 8px;
+      margin-top: 0;
       border-radius: 6px;
     }
 
@@ -221,7 +220,6 @@
       }
     }
 
-    /* 洗練された勝敗トグルボタン */
     .win-lose-group {
       display: flex;
       gap: 6px;
@@ -277,16 +275,52 @@
       border: 1px solid var(--border);
     }
 
-    .record-item {
-      border-bottom: 1px solid var(--border);
-      padding: 16px 0;
+    /* 大会ごとのグループカードデザイン */
+    .tournament-group {
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 12px;
+      overflow: hidden;
     }
 
-    .record-item:last-child {
+    .tournament-header {
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .tournament-header:hover {
+      background: rgba(51, 65, 85, 0.4);
+    }
+
+    .tournament-body {
+      padding: 0 16px 16px 16px;
+      border-top: 1px solid var(--border);
+      display: none; /* デフォルトは折りたたみ */
+      background: rgba(15, 23, 42, 0.6);
+    }
+
+    .tournament-body.open {
+      display: block;
+    }
+
+    .match-detail-item {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .match-detail-item:last-child {
       border-bottom: none;
     }
 
-    /* バッジデザイン */
     .badge-win {
       display: inline-block;
       padding: 2px 8px;
@@ -426,13 +460,14 @@
       
     <!-- バックアップ -->
     <div class="card" style="margin-top:24px; box-shadow:none; background:rgba(15, 23, 42, 0.3);">
-      <h2>データバックアップ</h2>
+      <h2>データバックアップ (同期用)</h2>
+      <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 12px;">マスタデータ（大会・デッキ）や戦績をまとめて他端末に移行できます。</p>
       <button onclick="backupData()" style="background:var(--border); color:var(--text-main);">バックアップファイルを保存</button>
     </div>  
 
     <!-- データ復元 -->
     <div class="card" style="margin-top:16px; box-shadow:none; background:rgba(15, 23, 42, 0.3);">
-      <h2>データ復元</h2>
+      <h2>データ復元 (同期用)</h2>
       <input type="file" id="restoreFile" accept=".json" style="margin-bottom:10px;">
       <button onclick="restoreData()" style="background:var(--border); color:var(--text-main);">バックアップから復元</button>
     </div>
@@ -840,29 +875,86 @@
       return;
     }
 
+    // 「日付 ＞ 大会名」ごとにグループ化する
+    const groups = {};
+    data.forEach((match, index) => {
+      const date = match.date || "1970-01-01";
+      const tournament = match.tournament || "大会名なし";
+      const key = date + "_" + tournament;
+
+      if (!groups[key]) {
+        groups[key] = {
+          date: date,
+          tournament: tournament,
+          myDeck: match.myDeck || "未選択",
+          matches: []
+        };
+      }
+      groups[key].matches.push({ match, originalIndex: matches.indexOf(match) });
+    });
+
+    // 日付の新しい順（または古い順）に並べ替え
+    const sortedKeys = Object.keys(groups).sort((a, b) => {
+      return groups[b].date.localeCompare(groups[a].date);
+    });
+
     recordList.innerHTML = "";
 
-    data.forEach((match) => {
-      const originalIndex = matches.indexOf(match);
-      const div = document.createElement("div");
-      div.className = "record-item";
+    sortedKeys.forEach(key => {
+      const group = groups[key];
+      const wins = group.matches.filter(item => item.match.result === "win").length;
+      const total = group.matches.length;
+      const losses = total - wins;
 
-      let resultBadge = match.result === "win" 
-        ? '<span class="badge-win">勝利</span>' 
-        : '<span class="badge-lose">敗北</span>';
+      const groupDiv = document.createElement("div");
+      groupDiv.className = "tournament-group";
 
-      div.innerHTML = `
-        <div style="font-weight: 600; font-size: 15px; margin-bottom: 2px;">${match.tournament}</div>
-        <div style="font-size: 13px; color: var(--text-sub); margin-bottom: 6px;">${match.date || "日付なし"}</div>
-        <div style="font-size: 14px; margin-bottom: 6px;"><strong>${match.myDeck}</strong> vs <strong>${match.opponent}</strong></div>
-        <div style="display: flex; align-items: center; gap: 10px; font-size: 13px;">
-          ${resultBadge}
-          <span style="color: var(--text-sub);">${match.firstSecond || ""}</span>
+      // ヘルパー：大会ごとの内訳HTMLを作成
+      let detailsHTML = "";
+      group.matches.forEach(item => {
+        const m = item.match;
+        const resultBadge = m.result === "win" 
+          ? '<span class="badge-win">勝利</span>' 
+          : '<span class="badge-lose">敗北</span>';
+
+        detailsHTML += `
+          <div class="match-detail-item">
+            <div>
+              <div style="font-size: 13px; color: var(--text-sub); margin-bottom: 2px;">${m.firstSecond || ""}</div>
+              <div style="font-size: 14px; font-weight: 500;">対面: <strong>${m.opponent}</strong></div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              ${resultBadge}
+              <button class="btn-danger" onclick="deleteMatch(${item.originalIndex})">削除</button>
+            </div>
+          </div>
+        `;
+      });
+
+      groupDiv.innerHTML = `
+        <div class="tournament-header" onclick="toggleTournament(this)">
+          <div>
+            <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 2px;">${group.date} ／ 使用: ${group.myDeck}</div>
+            <div style="font-size: 15px; font-weight: 600; color: var(--text-main);">${group.tournament}</div>
+          </div>
+          <div style="text-align: right;">
+            <span style="font-size: 14px; font-weight: 700; color: var(--accent);">${wins}勝 ${losses}敗</span>
+            <div style="font-size: 11px; color: var(--text-sub);">クリックで詳細 ▼</div>
+          </div>
         </div>
-        <button class="btn-danger" onclick="deleteMatch(${originalIndex})">削除</button>
+        <div class="tournament-body">
+          ${detailsHTML}
+        </div>
       `;
-      recordList.appendChild(div);
+
+      recordList.appendChild(groupDiv);
     });
+  }
+
+  // 大会カードの開閉切り替え
+  function toggleTournament(headerEl) {
+    const bodyEl = headerEl.nextElementSibling;
+    bodyEl.classList.toggle("open");
   }
 
   function updateDisplay() {
@@ -954,7 +1046,7 @@
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = "dmp-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+    a.download = "dmp-master-backup-" + new Date().toISOString().slice(0, 10) + ".json";
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -973,22 +1065,22 @@
       try {
         const restored = JSON.parse(event.target.result);
         let restoredMatches = [];
-        let restoredTournaments = tournaments;
-        let restoredDecks = decks;
+        let restoredTournaments = [];
+        let restoredDecks = [];
 
-        if (Array.isArray(restored)) {
-          restoredMatches = restored;
-        } else if (restored && Array.isArray(restored.matches)) {
+        if (restored && Array.isArray(restored.matches)) {
           restoredMatches = restored.matches;
           if (Array.isArray(restored.tournaments)) restoredTournaments = restored.tournaments;
           if (Array.isArray(restored.decks)) restoredDecks = restored.decks;
+        } else if (Array.isArray(restored)) {
+          restoredMatches = restored;
         } else {
           alert("正しいバックアップファイルではありません。");
           return;
         }
 
         const ok = confirm(
-          restoredMatches.length + "件の戦績データを復元します。\n現在のデータは上書きされます。よろしいですか？"
+          `以下のデータを復元します。\n・戦績: ${restoredMatches.length}件\n・大会マスタ: ${restoredTournaments.length}件\n・デッキマスタ: ${restoredDecks.length}件\n\n現在のデータは上書きされます。よろしいですか？`
         );
 
         if (!ok) return;
@@ -1006,7 +1098,7 @@
         updateSelects();
         updateDisplay();
 
-        alert("データを復元しました！");
+        alert("データを正常に復元しました！");
       } catch (error) {
         alert("バックアップファイルを読み込めませんでした。");
       }
