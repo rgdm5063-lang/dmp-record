@@ -694,17 +694,22 @@ function searchRecords() {
 
     return dateOK && tournamentOK;
   });
+
+  renderRecords(filteredMatches);
+}
+
 function clearSearch() {
 
   document.getElementById("searchDate").value = "";
+
   document.getElementById("searchTournament").value = "";
 
   renderRecords(matches);
 }
-  renderRecords(filteredMatches);
-}
-  renderRecords();
-  }function deleteMatch(index) {
+
+renderRecords();
+  }
+  function deleteMatch(index) {
 
     const ok =
         confirm("この戦績を削除しますか？");
