@@ -201,6 +201,14 @@
       text-align: center;
       padding: 10px;
     }
+
+    canvas {
+      width: 100% !important;
+      height: 300px !important;
+      background: #fafafa;
+      border-radius: 8px;
+      border: 1px solid #eee;
+    }
   </style>
 </head>
 
@@ -215,6 +223,7 @@
   <button onclick="showPage('input')">戦績入力</button>
   <button onclick="showPage('records')">戦績一覧</button>
   <button onclick="showPage('matchup')">対面勝率</button>
+  <button onclick="showPage('chartView')">勝率グラフ</button>
   <button onclick="showPage('master')">マスタ管理</button>
 </nav>
 
@@ -288,6 +297,16 @@
     </div>
   </div>
 
+  <!-- 勝率グラフ -->
+  <div id="chartView" style="display:none;" class="card">
+    <h2>📈 時系列勝率推移グラフ</h2>
+    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">日付順に並べた大会ごとの「累積勝率」の推移を表示します。</p>
+    <div id="chartContainer">
+      <canvas id="winrateChart"></canvas>
+    </div>
+    <div id="chartLegend" style="margin-top: 10px; font-size: 13px; color: #444;"></div>
+  </div>
+
   <!-- 戦績一覧 -->
   <div id="records" style="display:none;" class="card">
     <h2>📋 戦績一覧</h2>
@@ -351,8 +370,15 @@
     document.getElementById("input").style.display = "none";
     document.getElementById("records").style.display = "none";
     document.getElementById("matchup").style.display = "none";
+    document.getElementById("chartView").style.display = "none";
     document.getElementById("master").style.display = "none";
+    
     document.getElementById(page).style.display = "block";
+
+    // グラフタブが開かれたら描画を更新
+    if (page === 'chartView') {
+      drawWinrateChart();
+    }
   }
 
   // デッキマスタ管理
@@ -480,7 +506,6 @@
 
     let html = "";
 
-    // 予選入力行
     if (qualCount > 0) {
       html += `<h3>予選ラウンド (${qualCount}回戦)</h3>`;
       for (let i = 1; i <= qualCount; i++) {
@@ -488,7 +513,6 @@
       }
     }
 
-    // 本戦入力行
     if (finalCount > 0) {
       html += `<h3>本戦トーナメント (${finalCount}回戦)</h3>`;
       for (let i = 1; i <= finalCount; i++) {
@@ -517,7 +541,7 @@
           <div>
             <select class="row-firstsecond">
               <option value="先攻">先攻</option>
-              <option value="后攻">後攻</option>
+              <option value="後攻">後攻</option>
               <option value="先後未選択">先後未選択</option>
             </select>
           </div>
@@ -530,7 +554,6 @@
     `;
   }
 
-  // 行ごとの勝敗選択トグル
   function setRowResult(btn, result) {
     const parentGroup = btn.parentElement;
     const winBtn = parentGroup.querySelector('.win');
@@ -548,7 +571,6 @@
     }
   }
 
-  // すべての戦績を保存
   function saveAllMatches() {
     const tournament = document.getElementById("tournament").value;
     const date = document.getElementById("date").value;
@@ -564,7 +586,6 @@
       const firstSecond = row.querySelector(".row-firstsecond").value;
       const result = row.querySelector(".win-lose-group").dataset.result;
 
-      // 対戦相手または勝敗のどちらかが入力されている、あるいは両方入力されている行を有効とする
       if (opponent || result) {
         if (!opponent) {
           alert(`${phase} ${round}回戦の相手デッキが未選択です。`);
@@ -577,7 +598,7 @@
 
         newMatches.push({
           tournament: tournament || "大会名なし",
-          date: date || "",
+          date: date || "1970-01-01",
           myDeck: myDeck || "未選択",
           opponent,
           result,
@@ -591,16 +612,126 @@
       return;
     }
 
-    // 追加して保存
     matches.push(...newMatches);
     localStorage.setItem("dmpMatches", JSON.stringify(matches));
 
     updateDisplay();
 
-    // フォームリセット
     document.getElementById("dynamicInputArea").style.display = "none";
     alert(newMatches.length + "件の戦績を保存しました！");
     showPage("records");
+  }
+
+  // グラフ描画機能
+  function drawWinrateChart() {
+    const canvas = document.getElementById("winrateChart");
+    const ctx = canvas.getContext("2d");
+    
+    // 高解像度ディスプレイ対応
+    const width = canvas.parentElement.clientWidth;
+    const height = 300;
+    canvas.width = width * window.devicePixelRatio;
+    canvas.height = height * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+    ctx.clearRect(0, 0, width, height);
+
+    if (matches.length === 0) {
+      ctx.fillStyle = "#888";
+      ctx.font = "14px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("データがありません", width / 2, height / 2);
+      document.getElementById("chartLegend.innerHTML = "";
+      return;
+    }
+
+    // 日付順（古い順）にソート
+    const sortedMatches = [...matches].sort((a, b) => {
+      const dateA = a.date || "1970-01-01";
+      const dateB = b.date || "1970-01-01";
+      return dateA.localeCompare(dateB);
+    });
+
+    // 試合ごとの累積勝率データを計算
+    let totalWins = 0;
+    const points = sortedMatches.map((match, index) => {
+      if (match.result === "win") totalWins++;
+      const rate = ((totalWins / (index + 1)) * 100);
+      return {
+        xIndex: index,
+        rate: rate,
+        date: match.date || "日付なし",
+        tournament: match.tournament || "大会名なし"
+      };
+    });
+
+    const padding = 40;
+    const graphWidth = width - padding * 2;
+    const graphHeight = height - padding * 2;
+
+    // グリッド線の描画 (0%, 25%, 50%, 75%, 100%)
+    ctx.strokeStyle = "#e0e0e0";
+    ctx.lineWidth = 1;
+    ctx.font = "11px sans-serif";
+    ctx.fillStyle = "#666";
+    ctx.textAlign = "right";
+
+    for (let i = 0; i <= 4; i++) {
+      const rateVal = i * 25;
+      const y = padding + graphHeight - (graphHeight * (rateVal / 100));
+      
+      ctx.beginPath();
+      ctx.moveTo(padding, y);
+      ctx.lineTo(width - padding, y);
+      ctx.stroke();
+
+      ctx.fillText(rateVal + "%", padding - 8, y + 4);
+    }
+
+    if (points.length === 1) {
+      // 1件だけの場合は点だけ表示
+      const x = padding + graphWidth / 2;
+      const y = padding + graphHeight - (graphHeight * (points[0].rate / 100));
+      ctx.fillStyle = "#2563eb";
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.fill();
+      document.getElementById("chartLegend").innerHTML = `全 ${points.length} 試合の累積勝率推移`;
+      return;
+    }
+
+    // 折れ線グラフのパスを描画
+    ctx.strokeStyle = "#2563eb";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+
+    points.forEach((pt, i) => {
+      const x = padding + (graphWidth / (points.length - 1)) * i;
+      const y = padding + graphHeight - (graphHeight * (pt.rate / 100));
+
+      if (i === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    });
+    ctx.stroke();
+
+    // データポイント（丸印）を描画
+    points.forEach((pt, i) => {
+      const x = padding + (graphWidth / (points.length - 1)) * i;
+      const y = padding + graphHeight - (graphHeight * (pt.rate / 100));
+
+      ctx.fillStyle = "white";
+      ctx.strokeStyle = "#2563eb";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    });
+
+    document.getElementById("chartLegend").innerHTML = `総試合数: <strong>${points.length}試合</strong> ／ 最終累積勝率: <strong>${points[points.length - 1].rate.toFixed(1)}%</strong>（時系列順）`;
   }
 
   // 戦績一覧を表示
