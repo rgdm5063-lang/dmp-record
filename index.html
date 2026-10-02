@@ -246,7 +246,25 @@ DMPランキング用の戦績管理アプリ
 <div id="records" class="card">
   <h2>📋 戦績一覧</h2>
   <div id="recordList"></div>
+<div style="margin-bottom:15px;">
 
+  <label>日付で検索</label>
+  <input id="searchDate" type="date">
+
+  <label>大会名で検索</label>
+  <select id="searchTournament">
+    <option value="">すべての大会</option>
+  </select>
+
+  <button onclick="searchRecords()">
+    🔎 検索
+  </button>
+
+  <button onclick="clearSearch()">
+    検索をクリア
+  </button>
+
+</div>
   
  <!-- バックアップ -->
 <div class="card">
@@ -411,6 +429,8 @@ myDeckSelect.innerHTML =
   decks.map(function(name) {
     return `<option value="${name}">${name}</option>`;
   }).join("");
+  renderSearchTournament();
+      }
   const opponentSelect = document.getElementById("opponent");
 
 opponentSelect.innerHTML =
@@ -436,7 +456,17 @@ function deleteTournament(index) {
 
   renderTournamentMaster();
 }
+function renderSearchTournament() {
 
+  const select =
+    document.getElementById("searchTournament");
+
+  select.innerHTML =
+    '<option value="">すべての大会</option>' +
+    tournaments.map(function(name) {
+      return `<option value="${name}">${name}</option>`;
+    }).join("");
+}
 renderTournamentMaster();
 updateDisplay();
   // 結果を選択
@@ -503,12 +533,12 @@ function addMatch() {
 }
 // 画面を更新
 // 戦績一覧を表示
-function renderRecords() {
+function renderRecords(data = matches) {
 
   const recordList =
     document.getElementById("recordList");
 
-  if (matches.length === 0) {
+if (data.length === 0) {
     recordList.innerHTML =
       '<div class="empty">まだ戦績がありません</div>';
     return;
@@ -516,7 +546,7 @@ function renderRecords() {
 
   recordList.innerHTML = "";
 
-  matches.forEach((match, index) => {
+  data.forEach((match, index) => {
 
     const div = document.createElement("div");
 
@@ -645,7 +675,35 @@ function renderRecords() {
 
       }
     );
-renderRecords();
+function searchRecords() {
+
+  const searchDate =
+    document.getElementById("searchDate").value;
+
+  const searchTournament =
+    document.getElementById("searchTournament").value;
+
+  const filteredMatches = matches.filter(function(match) {
+
+    const dateOK =
+      !searchDate || match.date === searchDate;
+
+    const tournamentOK =
+      !searchTournament ||
+      match.tournament === searchTournament;
+
+    return dateOK && tournamentOK;
+  });
+function clearSearch() {
+
+  document.getElementById("searchDate").value = "";
+  document.getElementById("searchTournament").value = "";
+
+  renderRecords(matches);
+}
+  renderRecords(filteredMatches);
+}
+  renderRecords();
   }function deleteMatch(index) {
 
     const ok =
