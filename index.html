@@ -6,145 +6,212 @@
   <title>DMP戦績管理</title>
 
   <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --border: #334155;
+      --win: #10b981;
+      --win-bg: rgba(16, 185, 129, 0.15);
+      --lose: #ef4444;
+      --lose-bg: rgba(239, 68, 68, 0.15);
+      --danger: #dc2626;
+    }
+
     * {
       box-sizing: border-box;
     }
 
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
-      background: #f5f5f5;
-      color: #222;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.5;
     }
 
     header {
-      background: #111;
-      color: white;
-      padding: 20px;
+      background: #090d16;
+      border-bottom: 1px solid var(--border);
+      padding: 24px 20px;
       text-align: center;
     }
 
     header h1 {
       margin: 0;
-      font-size: 24px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
     }
 
     .nav {
-      background: #222;
+      background: #090d16;
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      padding: 10px;
-      gap: 5px;
+      padding: 0 10px 12px 10px;
+      gap: 6px;
+      border-bottom: 1px solid var(--border);
     }
 
     .nav button {
       width: auto;
       margin-top: 0;
-      padding: 8px 12px;
-      font-size: 14px;
-      background: #333;
-      color: white;
-      border: none;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      background: var(--card-bg);
+      color: var(--text-sub);
+      border: 1px solid var(--border);
       border-radius: 6px;
       cursor: pointer;
+      transition: all 0.2s ease;
     }
 
     .nav button:hover {
-      background: #444;
+      background: var(--border);
+      color: var(--text-main);
     }
 
     main {
-      max-width: 700px;
-      margin: 20px auto;
-      padding: 0 15px;
+      max-width: 650px;
+      margin: 24px auto;
+      padding: 0 16px;
     }
 
     .card {
-      background: white;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
 
     .stats {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+      gap: 12px;
     }
 
     .stat {
       text-align: center;
-      padding: 15px 5px;
-      background: #f0f0f0;
-      border-radius: 10px;
+      padding: 16px 8px;
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--border);
+      border-radius: 8px;
     }
 
     .stat .number {
       font-size: 24px;
-      font-weight: bold;
+      font-weight: 700;
+      color: var(--text-main);
     }
 
     .stat .label {
-      font-size: 13px;
-      color: #666;
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     h2 {
       margin-top: 0;
-      font-size: 19px;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
     }
 
     h3 {
-      font-size: 16px;
-      margin-top: 20px;
-      margin-bottom: 8px;
-      border-left: 4px solid #111;
-      padding-left: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      margin-top: 24px;
+      margin-bottom: 12px;
+      border-left: 3px solid var(--accent);
+      padding-left: 10px;
+      color: var(--text-main);
     }
 
     label {
       display: block;
-      margin-top: 12px;
-      margin-bottom: 5px;
-      font-weight: bold;
-      font-size: 14px;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      font-weight: 500;
+      font-size: 13px;
+      color: var(--text-sub);
     }
 
-    input, select, button {
+    input, select {
       width: 100%;
-      padding: 12px;
-      border: 1px solid #ccc;
+      padding: 10px 14px;
+      background: #0f172a;
+      border: 1px solid var(--border);
       border-radius: 8px;
-      font-size: 16px;
+      font-size: 15px;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
     }
 
     button {
-      margin-top: 15px;
-      background: #111;
+      width: 100%;
+      padding: 12px;
+      background: var(--accent);
       color: white;
       border: none;
-      font-weight: bold;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
       cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+      margin-top: 16px;
+    }
+
+    button:hover {
+      background: var(--accent-hover);
     }
 
     button:active {
-      opacity: 0.7;
+      opacity: 0.8;
+    }
+
+    /* カッコいい削除ボタン */
+    .btn-danger {
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid var(--danger);
+      padding: 6px 12px;
+      font-size: 12px;
+      width: auto;
+      margin-top: 8px;
+      border-radius: 6px;
+    }
+
+    .btn-danger:hover {
+      background: var(--danger);
+      color: white;
     }
 
     .match-row {
-      background: #fafafa;
-      border: 1px solid #e0e0e0;
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 10px;
+      padding: 14px;
+      margin-bottom: 12px;
     }
 
     .match-row-grid {
       display: grid;
       grid-template-columns: 2fr 1fr 1fr;
-      gap: 8px;
+      gap: 10px;
       margin-top: 8px;
     }
 
@@ -154,42 +221,41 @@
       }
     }
 
+    /* 洗練された勝敗トグルボタン */
     .win-lose-group {
       display: flex;
-      gap: 5px;
+      gap: 6px;
     }
 
     .win-lose-group button {
       margin-top: 0;
       padding: 8px;
-      font-size: 14px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #0f172a;
+      color: var(--text-sub);
     }
 
-    .win {
-      background: #e8f5e9 !important;
-      color: #1b5e20;
-      border: 1px solid #c8e6c9;
+    .win-lose-group button.win.selected-win {
+      background: var(--win-bg);
+      color: var(--win);
+      border-color: var(--win);
     }
 
-    .lose {
-      background: #ffebee !important;
-      color: #b71c1c;
-      border: 1px solid #ffcdd2;
-    }
-
-    .selected-win {
-      outline: 3px solid #2e7d32;
-    }
-
-    .selected-lose {
-      outline: 3px solid #c62828;
+    .win-lose-group button.lose.selected-lose {
+      background: var(--lose-bg);
+      color: var(--lose);
+      border-color: var(--lose);
     }
 
     .matchup {
       display: flex;
       justify-content: space-between;
-      padding: 10px 0;
-      border-bottom: 1px solid #eee;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
     }
 
     .matchup:last-child {
@@ -197,17 +263,50 @@
     }
 
     .empty {
-      color: #888;
+      color: var(--text-sub);
       text-align: center;
-      padding: 10px;
+      padding: 20px;
+      font-size: 14px;
     }
 
     canvas {
       width: 100% !important;
       height: 300px !important;
-      background: #fafafa;
+      background: #0f172a;
       border-radius: 8px;
-      border: 1px solid #eee;
+      border: 1px solid var(--border);
+    }
+
+    .record-item {
+      border-bottom: 1px solid var(--border);
+      padding: 16px 0;
+    }
+
+    .record-item:last-child {
+      border-bottom: none;
+    }
+
+    /* バッジデザイン */
+    .badge-win {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--win);
+      background: var(--win-bg);
+      border-radius: 4px;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-lose {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--lose);
+      background: var(--lose-bg);
+      border-radius: 4px;
+      border: 1px solid rgba(239, 68, 68, 0.3);
     }
   </style>
 </head>
@@ -215,7 +314,7 @@
 <body>
 
 <header>
-  <h1>🏆 DMP戦績管理</h1>
+  <h1>DMP戦績管理</h1>
 </header>
 
 <nav class="nav">
@@ -231,7 +330,7 @@
   <!-- 総合成績 -->
   <div id="home">
     <div class="card">
-      <h2>📊 総合成績</h2>
+      <h2>総合成績</h2>
       <div class="stats">
         <div class="stat">
           <div class="number" id="total">0</div>
@@ -249,10 +348,10 @@
     </div>
   </div>
 
-  <!-- 戦績入力（一括入力対応） -->
+  <!-- 戦績入力 -->
   <div id="input" style="display:none;">
     <div class="card">
-      <h2>➕ 大会戦績を一括入力</h2>
+      <h2>大会戦績を一括入力</h2>
 
       <label>大会名</label>
       <select id="tournament">
@@ -267,7 +366,7 @@
         <option value="">自分のデッキを選択してください</option>
       </select>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
         <div>
           <label>予選の回戦数</label>
           <input id="qualRoundCount" type="number" min="0" max="10" value="5">
@@ -278,20 +377,19 @@
         </div>
       </div>
 
-      <button onclick="generateMatchInputs()" style="background: #2563eb; margin-top: 15px;">回戦入力欄を作成する</button>
+      <button onclick="generateMatchInputs()" style="margin-top: 20px;">回戦入力欄を作成する</button>
     </div>
 
-    <!-- 動的に生成される回戦入力エリア -->
     <div id="dynamicInputArea" class="card" style="display:none;">
-      <h2>📝 各回戦の結果入力</h2>
+      <h2>各回戦の結果入力</h2>
       <div id="matchRowsContainer"></div>
-      <button onclick="saveAllMatches()" style="background: #16a34a; margin-top: 20px; font-size: 18px;">💾 すべての戦績を保存する</button>
+      <button onclick="saveAllMatches()" style="background: var(--win); margin-top: 20px;">すべての戦績を保存する</button>
     </div>
   </div>
 
   <!-- 対面別 -->
   <div id="matchup" style="display:none;" class="card">
-    <h2>⚔️ 対面別勝率</h2>
+    <h2>対面別勝率</h2>
     <div id="matchups">
       <div class="empty">まだ戦績がありません</div>
     </div>
@@ -299,19 +397,19 @@
 
   <!-- 勝率グラフ -->
   <div id="chartView" style="display:none;" class="card">
-    <h2>📈 時系列勝率推移グラフ</h2>
-    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">日付順に並べた戦績の「累積勝率」の推移を表示します。</p>
+    <h2>時系列勝率推移グラフ</h2>
+    <p style="font-size: 13px; color: var(--text-sub); margin-bottom: 16px;">日付順に並べた戦績の累積勝率の推移を表示します。</p>
     <div id="chartContainer">
       <canvas id="winrateChart"></canvas>
     </div>
-    <div id="chartLegend" style="margin-top: 10px; font-size: 13px; color: #444;"></div>
+    <div id="chartLegend" style="margin-top: 12px; font-size: 13px; color: var(--text-sub);"></div>
   </div>
 
   <!-- 戦績一覧 -->
   <div id="records" style="display:none;" class="card">
-    <h2>📋 戦績一覧</h2>
+    <h2>戦績一覧</h2>
     
-    <div style="margin-bottom:15px; padding-bottom:15px; border-bottom:1px solid #eee;">
+    <div style="margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--border);">
       <label>日付で検索</label>
       <input id="searchDate" type="date">
 
@@ -320,38 +418,38 @@
         <option value="">すべての大会</option>
       </select>
 
-      <button onclick="searchRecords()">🔎 検索</button>
-      <button onclick="clearSearch()" style="background:#666;">検索をクリア</button>
+      <button onclick="searchRecords()">検索</button>
+      <button onclick="clearSearch()" style="background:var(--border); color:var(--text-main);">検索をクリア</button>
     </div>
 
     <div id="recordList"></div>
       
     <!-- バックアップ -->
-    <div class="card" style="margin-top:20px; box-shadow:none; border:1px solid #eee;">
-      <h2>💾 データバックアップ</h2>
-      <button onclick="backupData()">📥 バックアップする</button>
+    <div class="card" style="margin-top:24px; box-shadow:none; background:rgba(15, 23, 42, 0.3);">
+      <h2>データバックアップ</h2>
+      <button onclick="backupData()" style="background:var(--border); color:var(--text-main);">バックアップファイルを保存</button>
     </div>  
 
     <!-- データ復元 -->
-    <div class="card" style="margin-top:15px; box-shadow:none; border:1px solid #eee;">
-      <h2>📤 データ復元</h2>
+    <div class="card" style="margin-top:16px; box-shadow:none; background:rgba(15, 23, 42, 0.3);">
+      <h2>データ復元</h2>
       <input type="file" id="restoreFile" accept=".json" style="margin-bottom:10px;">
-      <button onclick="restoreData()">📤 バックアップから復元</button>
+      <button onclick="restoreData()" style="background:var(--border); color:var(--text-main);">バックアップから復元</button>
     </div>
   </div>
 
   <!-- マスタ管理 -->
   <div id="master" style="display:none;" class="card">
-    <h2>⚙️ マスタ管理</h2>
+    <h2>マスタ管理</h2>
 
-    <h3>🏆 大会マスタ</h3>
+    <h3>大会マスタ</h3>
     <div>
       <input id="tournamentName" type="text" placeholder="大会名を入力">
       <button onclick="addTournament()">大会を追加</button>
     </div>
     <div id="tournamentMasterList"></div>
 
-    <h3>🃏 デッキマスタ</h3>
+    <h3>デッキマスタ</h3>
     <div>
       <input id="deckName" type="text" placeholder="デッキ名を入力">
       <button onclick="addDeck()">デッキを追加</button>
@@ -375,13 +473,11 @@
     
     document.getElementById(page).style.display = "block";
 
-    // グラフタブが開かれたら描画を更新
     if (page === 'chartView') {
-      setTimeout(drawWinrateChart, 50); // 描画タイミングのズレを防ぐための遅延
+      setTimeout(drawWinrateChart, 50);
     }
   }
 
-  // デッキマスタ管理
   function addDeck() {
     const input = document.getElementById("deckName");
     const name = input.value.trim();
@@ -411,9 +507,9 @@
     }
     list.innerHTML = decks.map(function(name, index) {
       return `
-        <div style="margin: 8px 0; display:flex; justify-content:space-between; align-items:center;">
-          <span>${name}</span>
-          <button onclick="deleteDeck(${index})" style="width:auto; margin-top:0; padding:4px 8px; background:#d93025; font-size:13px;">削除</button>
+        <div style="margin: 10px 0; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:14px;">${name}</span>
+          <button class="btn-danger" onclick="deleteDeck(${index})">削除</button>
         </div>
       `;
     }).join("");
@@ -429,7 +525,6 @@
     updateSelects();
   }
 
-  // 大会マスタ管理
   function addTournament() {
     const input = document.getElementById("tournamentName");
     const name = input.value.trim();
@@ -459,9 +554,9 @@
     }
     list.innerHTML = tournaments.map(function(name, index) {
       return `
-        <div style="margin: 8px 0; display:flex; justify-content:space-between; align-items:center;">
-          <span>${name}</span>
-          <button onclick="deleteTournament(${index})" style="width:auto; margin-top:0; padding:4px 8px; background:#d93025; font-size:13px;">削除</button>
+        <div style="margin: 10px 0; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:14px;">${name}</span>
+          <button class="btn-danger" onclick="deleteTournament(${index})">削除</button>
         </div>
       `;
     }).join("");
@@ -477,7 +572,6 @@
     updateSelects();
   }
 
-  // セレクトボックスの更新
   function updateSelects() {
     const tournamentSelect = document.getElementById("tournament");
     if (tournamentSelect) {
@@ -498,7 +592,6 @@
     }
   }
 
-  // 回戦入力欄の動的生成
   function generateMatchInputs() {
     const qualCount = parseInt(document.getElementById("qualRoundCount").value) || 0;
     const finalCount = parseInt(document.getElementById("finalRoundCount").value) || 0;
@@ -537,7 +630,7 @@
 
     return `
       <div class="match-row" data-phase="${phase}" data-round="${roundNum}">
-        <div style="font-weight:bold; margin-bottom:4px; font-size:14px; color:#444;">${phase} ${roundNum}回戦</div>
+        <div style="font-weight:600; margin-bottom:6px; font-size:13px; color:var(--text-sub);">${phase} ${roundNum}回戦</div>
         <div class="match-row-grid">
           <div>
             <select class="row-opponent">
@@ -552,8 +645,8 @@
             </select>
           </div>
           <div class="win-lose-group">
-            <button type="button" class="win" onclick="setRowResult(this, 'win')">○ 勝ち</button>
-            <button type="button" class="lose" onclick="setRowResult(this, 'lose')">× 負け</button>
+            <button type="button" class="win" onclick="setRowResult(this, 'win')">勝利</button>
+            <button type="button" class="lose" onclick="setRowResult(this, 'lose')">敗北</button>
           </div>
         </div>
       </div>
@@ -598,7 +691,7 @@
           return;
         }
         if (!result) {
-          alert(`${phase} ${round}回戦の勝ち・負けが選択されていません。`);
+          alert(`${phase} ${round}回戦の勝利・敗北が選択されていません。`);
           return;
         }
 
@@ -628,7 +721,6 @@
     showPage("records");
   }
 
-  // グラフ描画機能
   function drawWinrateChart() {
     const canvas = document.getElementById("winrateChart");
     if (!canvas) return;
@@ -643,7 +735,7 @@
     ctx.clearRect(0, 0, width, height);
 
     if (matches.length === 0) {
-      ctx.fillStyle = "#888";
+      ctx.fillStyle = "#94a3b8";
       ctx.font = "14px sans-serif";
       ctx.textAlign = "center";
       ctx.fillText("データがありません", width / 2, height / 2);
@@ -652,7 +744,6 @@
       return;
     }
 
-    // 日付順（古い順）にソート
     const sortedMatches = [...matches].sort((a, b) => {
       const dateA = a.date || "1970-01-01";
       const dateB = b.date || "1970-01-01";
@@ -675,11 +766,10 @@
     const graphWidth = width - padding * 2;
     const graphHeight = height - padding * 2;
 
-    // グリッド線の描画
-    ctx.strokeStyle = "#e0e0e0";
+    ctx.strokeStyle = "#334155";
     ctx.lineWidth = 1;
     ctx.font = "11px sans-serif";
-    ctx.fillStyle = "#666";
+    ctx.fillStyle = "#94a3b8";
     ctx.textAlign = "right";
 
     for (let i = 0; i <= 4; i++) {
@@ -697,7 +787,7 @@
     if (points.length === 1) {
       const x = padding + graphWidth / 2;
       const y = padding + graphHeight - (graphHeight * (points[0].rate / 100));
-      ctx.fillStyle = "#2563eb";
+      ctx.fillStyle = "#3b82f6";
       ctx.beginPath();
       ctx.arc(x, y, 5, 0, Math.PI * 2);
       ctx.fill();
@@ -706,9 +796,8 @@
       return;
     }
 
-    // 折れ線グラフ描画
-    ctx.strokeStyle = "#2563eb";
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = "#3b82f6";
+    ctx.lineWidth = 2.5;
     ctx.beginPath();
 
     points.forEach((pt, i) => {
@@ -723,13 +812,12 @@
     });
     ctx.stroke();
 
-    // データポイント描画
     points.forEach((pt, i) => {
       const x = padding + (graphWidth / (points.length - 1)) * i;
       const y = padding + graphHeight - (graphHeight * (pt.rate / 100));
 
-      ctx.fillStyle = "white";
-      ctx.strokeStyle = "#2563eb";
+      ctx.fillStyle = "#1e293b";
+      ctx.strokeStyle = "#3b82f6";
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(x, y, 4, 0, Math.PI * 2);
@@ -739,11 +827,10 @@
 
     const legend = document.getElementById("chartLegend");
     if (legend) {
-      legend.innerHTML = `総試合数: <strong>${points.length}試合</strong> ／ 最終累積勝率: <strong>${points[points.length - 1].rate.toFixed(1)}%</strong>（時系列順）`;
+      legend.innerHTML = `総試合数: <strong>${points.length}試合</strong> ／ 最終累積勝率: <strong>${points[points.length - 1].rate.toFixed(1)}%</strong>`;
     }
   }
 
-  // 戦績一覧を表示
   function renderRecords(data = matches) {
     const recordList = document.getElementById("recordList");
     if (!recordList) return;
@@ -758,23 +845,26 @@
     data.forEach((match) => {
       const originalIndex = matches.indexOf(match);
       const div = document.createElement("div");
-      div.style.borderBottom = "1px solid #eee";
-      div.style.padding = "12px 0";
+      div.className = "record-item";
 
-      let resultText = match.result === "win" ? "🟢 勝ち" : "🔴 負け";
+      let resultBadge = match.result === "win" 
+        ? '<span class="badge-win">勝利</span>' 
+        : '<span class="badge-lose">敗北</span>';
 
       div.innerHTML = `
-        <div><strong>${match.tournament}</strong></div>
-        <div>${match.date || "日付なし"}</div>
-        <div>${match.myDeck} vs ${match.opponent}</div>
-        <div>${resultText} ／ ${match.firstSecond || ""}</div>
-        <button onclick="deleteMatch(${originalIndex})" style="width:auto; margin-top:8px; padding:6px 12px; background:#d93025; color:white; border:none; border-radius:6px; font-size:14px;">🗑️ 削除</button>
+        <div style="font-weight: 600; font-size: 15px; margin-bottom: 2px;">${match.tournament}</div>
+        <div style="font-size: 13px; color: var(--text-sub); margin-bottom: 6px;">${match.date || "日付なし"}</div>
+        <div style="font-size: 14px; margin-bottom: 6px;"><strong>${match.myDeck}</strong> vs <strong>${match.opponent}</strong></div>
+        <div style="display: flex; align-items: center; gap: 10px; font-size: 13px;">
+          ${resultBadge}
+          <span style="color: var(--text-sub);">${match.firstSecond || ""}</span>
+        </div>
+        <button class="btn-danger" onclick="deleteMatch(${originalIndex})">削除</button>
       `;
       recordList.appendChild(div);
     });
   }
 
-  // 表示全体の更新
   function updateDisplay() {
     const total = matches.length;
     const wins = matches.filter(match => match.result === "win").length;
@@ -788,7 +878,6 @@
     if (winsEl) winsEl.textContent = wins;
     if (winrateEl) winrateEl.textContent = winrate + "%";
 
-    // 対面別集計
     const matchupData = {};
     matches.forEach(match => {
       if (!matchupData[match.opponent]) {
@@ -811,8 +900,11 @@
           const div = document.createElement("div");
           div.className = "matchup";
           div.innerHTML = `
-            <span><strong>${opponent}</strong><br>${data.wins}勝 ${data.total - data.wins}敗</span>
-            <strong>${rate}%</strong>
+            <div>
+              <div style="font-weight: 600; font-size: 14px;">${opponent}</div>
+              <div style="font-size: 12px; color: var(--text-sub);">${data.wins}勝 ${data.total - data.wins}敗</div>
+            </div>
+            <div style="font-weight: 700; font-size: 16px;">${rate}%</div>
           `;
           container.appendChild(div);
         });
@@ -822,7 +914,6 @@
     renderRecords();
   }
 
-  // 検索
   function searchRecords() {
     const searchDate = document.getElementById("searchDate").value;
     const searchTournament = document.getElementById("searchTournament").value;
@@ -836,14 +927,12 @@
     renderRecords(filteredMatches);
   }
 
-  // 検索をクリア
   function clearSearch() {
     document.getElementById("searchDate").value = "";
     document.getElementById("searchTournament").value = "";
     renderRecords(matches);
   }
 
-  // 削除
   function deleteMatch(index) {
     const ok = confirm("この戦績を削除しますか？");
     if (!ok) return;
@@ -853,7 +942,6 @@
     updateDisplay();
   }
 
-  // バックアップ
   function backupData() {
     const backupObj = {
       matches: matches,
@@ -869,16 +957,14 @@
     a.download = "dmp-backup-" + new Date().toISOString().slice(0, 10) + ".json";
     a.click();
     URL.revokeObjectURL(url);
-    alert("バックアップしました！");
   }
 
-  // データ復元
   function restoreData() {
     const fileInput = document.getElementById("restoreFile");
     const file = fileInput.files[0];
 
     if (!file) {
-      alert("バックアップファイルを選択してください！");
+      alert("バックアップファイルを選択してください");
       return;
     }
 
@@ -902,7 +988,7 @@
         }
 
         const ok = confirm(
-          restoredMatches.length + "件の戦績データを復元します。\n現在のデータは上書きされます。\nよろしいですか？"
+          restoredMatches.length + "件の戦績データを復元します。\n現在のデータは上書きされます。よろしいですか？"
         );
 
         if (!ok) return;
@@ -928,7 +1014,6 @@
     reader.readAsText(file);
   }
 
-  // 初期化実行
   renderDeckMaster();
   renderTournamentMaster();
   updateSelects();
